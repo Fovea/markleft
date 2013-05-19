@@ -74,7 +74,7 @@ Advanced usage
 
 Some plugins require that their output be final, i.e. not transformed by subsequent plugins. In order to achieve this, the transform method can chose to return an array of strings.
 
-The plugin engine will not run on lines starting with a '&gt';
+The plugin engine will not run on lines starting with a '<'
 
 See for example this italic plugin:
 
@@ -91,6 +91,7 @@ It will replace `'I am _blue_'` with `'I am <i class="italic">blue</i>'`.
 Now imagine that another plugin replace `"xxx"` with `<cite>xxx</cite>`, then we will loose `class="italic"` and end up with an invalid HTML.
 
 That's why this plugin should be writen this way:
+
     markleft.registerPlugin({
         name: 'italic',
         transform: function (text) {

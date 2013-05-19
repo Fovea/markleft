@@ -7,12 +7,12 @@ Overview
 --------
 
 The main goal of markleft is to be just as natural as writing normal text:
- - links are replaces with HTML a tags.
- - line breaks preserved.
- - bullet points detected and replaced with HTML ul/li tags.
+ - links are replaces with HTML a tags
+ - line breaks preserved
+ - HTML is escaped
+ - bullet points detected and replaced with HTML ul/li tags [TODO]
 
-Markleft combine this with a secondary objective, which is to be extensible
-offering you the chance to add your own extension to the language.
+Markleft combine this with a secondary objective, which is to be extensible offering you the chance to add your own extension to the language.
 
 Usage
 -----

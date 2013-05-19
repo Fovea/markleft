@@ -46,6 +46,56 @@ Later on you can also unregister the plugin:
 
     markleft.unregisterPlugin('lowercase');
 
+Advanced plugins
+----------------
+
+Some plugins require their output to be final, i.e. not transformed by subsequent plugins. In order to achieve this, the transform method can chose to return an array of strings.
+
+The plugin engine will not run on lines starting with a &gt;
+
+Example, the italic plugin:
+
+    markleft.registerPlugin({
+        name: 'italic',
+        transform: function (text) {
+            var exp = /_([A-Za-z ]+)_/g;
+            return text.replace(exp, '<i class="italic">$1</i>');
+        }
+    });
+
+Will replace `'I am _blue_'` with `'I am <i class="italic">blue</i>'`. Imagine another plugin replace `"xxx"` with `<b>xxx</b>`, then we will loose `class="italic"` and end up with an invalid HTML.
+
+That's such plugin should be writen this way:
+
+    markleft.registerPlugin({
+        name: 'italic',
+        transform: function (text) {
+            var exp = /_([A-Za-z ]+)_/g;
+            var tok = '#%@%#';
+            var rep = tok + '<i class="italic">$1</i>' + tok;
+            var ret = text.replace(exp, rep);
+            return ret.split(tok);
+        }
+    });
+
+Everything from `<i>` to `</i>` will be ignored by the plugin manager, thus will remain identical when output.
+
+Included plugins
+----------------
+
+markleft comes with a range of included plugins that you may choose to activate:
+
+###markleft.bold
+
+Replace `Hello *world*` with `Hello <b>world</b>`.
+
+Enable with `markdown.registerPlugin(markdown.bold);`
+
+###markleft.italic
+Replace `Hello _world_` with `Hello <i>world</i>`.
+
+Enable with `markdown.registerPlugin(markdown.italic);`
+
 Licence
 -------
 

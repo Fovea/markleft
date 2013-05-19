@@ -38,11 +38,32 @@
 
     // Get a row text, turn it to richer HTML
     markleft.toHTML = function (txt) {
-        var html = txt;
+        // First escape the <> characters
+        var htmlList = [ escapeGtPlugin.transform(txt) ];
+
+        // Then run plugins
         for (var i = 0; i < plugins.length; ++i) {
-            html = plugins[i].transform(html);
+            var plug = plugins[i];
+            var newList = [];
+            for (var j = 0; j < htmlList.length; ++j) {
+                var html = htmlList[j];
+
+                // If the item is HTML, do not transform.
+                if (html[0] !== '<') {
+                    html = plug.transform(html);
+                }
+
+                // Add the result to the new list.
+                if (typeof html === 'string') {
+                    newList.push(html);
+                }
+                else {
+                    newList = newList.concat(html);
+                }
+            }
+            htmlList = newList;
         }
-        return html;
+        return htmlList.join('');
     };
 
     // Register a plugin
@@ -68,6 +89,9 @@
 
     // Remove a plugin from the collection.
     markleft.unregisterPlugin = function (name) {
+        if (name.name) { // In case we're given the plugin instead of its name.
+            name = name.name;
+        }
         for (var i = 0; i < plugins.length; ++i) {
             if (plugins[i].name === name) {
                 plugins.splice(i, 1);
@@ -80,14 +104,18 @@
     // Markleft default plugins
     // ------------------------
 
-    // Escape HTML special characters
-    var escapePlugin = {
-        name: 'escape',
+    // Escape HTML < and > characters
+    var escapeGtPlugin = {
+        name: 'gtlt',
         transform: function (text) {
-            return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            return text.replace(/</g, '&lt;').replace(/>/g, '&gt;');
         }
     };
-    markleft.registerPlugin(escapePlugin);
+    // escapeGt is run in hard by the toHTML method,
+    // because after escapeGt is done, we will ignore all elements
+    // starting with <
+    // That's why it's not registered (nor unregisterable)
+    // markleft.registerPlugin(escapeGtPlugin);
 
     // Replace text links with HTML <a> links
     var urlPlugin = {
@@ -96,10 +124,23 @@
             // Based upon:
             // http://stackoverflow.com/questions/37684
             var exp = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
-            return text.replace(exp, '<a href="$1">$1</a>'); 
+            var magicToken = '!#@#!';
+            var html = text.replace(exp, magicToken + '<a href="$1">$1</a>' + magicToken); 
+            return html.split(magicToken);
         }
     };
     markleft.registerPlugin(urlPlugin);
+
+    // Escape & characters
+    // Has to be done after replacing links.
+    var escapeAmpPlugin = {
+        name: 'amp',
+        transform: function (text) {
+            return text.replace(/&/g, '&amp;');
+        }
+    };
+    markleft.registerPlugin(escapeAmpPlugin);
+
 
     // Replace line break with <br/>
     var lineBreakPlugin = {
@@ -114,10 +155,35 @@
     var hrPlugin = {
         name: 'hr',
         transform: function (text) {
-            return text.replace(/\n---\n/g, '<hr />');
+            return text.replace(/<br \/>---<br \/>/g, '<hr />');
         }
     };
     markleft.registerPlugin(hrPlugin);
+
+    // Magic token.
+    var tok = '#%@%#';
+
+    // Replace _Some text_ with <i>Some text</i>
+    markleft.italic = {
+        name: 'italic',
+        transform: function (text) {
+            var exp = /_([^_]+)_/g;
+            var rep = tok + '<i>' + tok + '$1' + tok + '</i>' + tok;
+            var ret = text.replace(exp, rep);
+            return ret.split(tok);
+        }
+    };
+
+    // Replace *Some text* with <b>Some text</b>
+    markleft.bold = {
+        name: 'bold',
+        transform: function (text) {
+            var exp = /\*([^*]+)\*/g;
+            var rep = tok + '<b>' + tok + '$1' + tok + '</b>' + tok;
+            var ret = text.replace(exp, rep);
+            return ret.split(tok);
+        }
+    };
 
     return markleft;
 

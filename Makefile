@@ -19,8 +19,14 @@ minify: configure
 lint: configure
 	@node_modules/.bin/jshint ${SRC_FILE}
 
+test: check-mocha
+	@mocha
+
 configure: check-npm
 	@npm install
+
+check-mocha:
+	@which mocha > /dev/null || ( echo 'Please Install Mocha, http://visionmedia.github.io/mocha/'; exit 1 )
 
 check-npm:
 	@which npm > /dev/null || ( echo 'Please Install Node Package Manager, http://nodejs.org/'; exit 1 )
@@ -29,12 +35,12 @@ check-version:
 	@test "${VERSION_1}" != "${VERSION_2}" && echo ERROR: Version in ${SRC_FILE} and package.json do not correspond. || echo "${BASE_SRC_FILE} version: ${VERSION_1}"
 	@test "${VERSION_1}" != "${VERSION_2}" && exit 1 || exit 0
 
-all: build
+all: build test
 	@echo 'OK'
 
 clean:
 	@find . -name '*~' -exec rm '{}' ';'
 	@rm -fr docs/docco.css docs/index.html docs/${BASE_SRC_FILE}.html docs/public/
 
-publish: check-npm clean build
+publish: check-npm clean build test
 	@npm publish

@@ -1,0 +1,19 @@
+{
+    "name"          : "markleft.js",
+    "description"   : "Simplest markup language ever",
+    "url"           : "https://github.com/Fovea/markleft",
+    "keywords"      : ["markdown", "markup", "links", "escape", "rich", "text"],
+    "author"        : "Jean-Christophe Hoelt <hoelt@fovea.cc>",
+    "repository": {
+        "type": "git",
+        "url":  "git://github.com:Fovea/markleft.git"
+    },
+    "devDependencies": {
+        "docco": "latest",
+        "jshint": "latest",
+        "uglify-js": "latest"
+    },
+    "main"          : "markleft.js",
+    "version"       : "0.1.0",
+    "license"       : "MIT"
+}

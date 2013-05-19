@@ -42,6 +42,10 @@ You can register your own plugins to markup. Here's the example of a plugin that
 
 Of course you should come up with better ideas for plugins that this.
 
+Later on you can also unregister the plugin:
+
+    markleft.unregisterPlugin('lowercase');
+
 Licence
 -------
 

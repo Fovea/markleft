@@ -28,41 +28,55 @@
     //
     // User is free to add his own plugins to this array,
     // using the registerPlugin method.
-    var plugins = markleft.plugins = [];
+    markleft.plugins = [];
 
     // Our public API
     // --------------
 
     // Library version
-    markleft.VERSION = '0.1.0';
+    markleft.VERSION = '0.2.0';
+
+    var runPlugin = function (plug, htmlList) {
+        var newList = [];
+        for (var j = 0; j < htmlList.length; ++j) {
+            var html = htmlList[j];
+
+            // If the item is HTML, do not transform.
+            if (html[0] !== '<') {
+                if (plug.transform) {
+                    html = plug.transform(html);
+                }
+            }
+            else if (plug.transformHTML) {
+                html = plug.transformHTML(html);
+            }
+
+            // Add the result to the new list.
+            if (typeof html === 'string') {
+                newList.push(html);
+            }
+            else {
+                newList = newList.concat(html);
+            }
+        }
+        return newList;
+    };
 
     // Get a row text, turn it to richer HTML
     markleft.toHTML = function (txt) {
+
         // First escape the <> characters
         var htmlList = [ escapeGtPlugin.transform(txt) ];
 
         // Then run plugins
+        var plugins = markleft.plugins;
         for (var i = 0; i < plugins.length; ++i) {
-            var plug = plugins[i];
-            var newList = [];
-            for (var j = 0; j < htmlList.length; ++j) {
-                var html = htmlList[j];
-
-                // If the item is HTML, do not transform.
-                if (html[0] !== '<') {
-                    html = plug.transform(html);
-                }
-
-                // Add the result to the new list.
-                if (typeof html === 'string') {
-                    newList.push(html);
-                }
-                else {
-                    newList = newList.concat(html);
-                }
-            }
-            htmlList = newList;
+            htmlList = runPlugin(plugins[i], htmlList);
         }
+
+        // Finally remove HTML comments.
+        htmlList = runPlugin(noComments, htmlList);
+
         return htmlList.join('');
     };
 
@@ -76,25 +90,25 @@
         }
 
         // Check if plugin is not already installed.
-        for (var i = 0; i < plugins.length; ++i) {
-            if (plugins[i].name === p.name) {
+        for (var i = 0; i < markleft.plugins.length; ++i) {
+            if (markleft.plugins[i].name === p.name) {
                 console.log('markleft.registerPlugin: Plugin ' + p.name + ' already registered');
                 return;
             }
         }
 
         // Add the plugin to the list.
-        plugins.push(p);
+        markleft.plugins.push(p);
     };
 
     // Remove a plugin from the collection.
     markleft.unregisterPlugin = function (name) {
-        if (name.name) { // In case we're given the plugin instead of its name.
+        if (typeof name.name !== 'undefined') { // In case we're given the plugin instead of its name.
             name = name.name;
         }
-        for (var i = 0; i < plugins.length; ++i) {
-            if (plugins[i].name === name) {
-                plugins.splice(i, 1);
+        for (var i = 0; i < markleft.plugins.length; ++i) {
+            if (markleft.plugins[i].name === name) {
+                markleft.plugins.splice(i, 1);
                 return;
             }
         }
@@ -160,8 +174,29 @@
     };
     markleft.registerPlugin(hrPlugin);
 
+
+    // Remove HTML comments
+    var noComments = {
+        name: 'nocomments',
+        transform: function (text) {
+            return text;
+        },
+        transformHTML: function (html) {
+            var exp = /<!--[\s\S]*?-->/g;
+            return html.replace(exp, '');
+        }
+    };
+    // noComments isn't registered as it's run manually
+    // after all other plugins are done.
+    // markleft.registerPlugin(noComments);
+
     // Magic token.
     var tok = '#%@%#';
+
+    var finalReplace = markleft.finalReplace = function (text, exp, rep) {
+        var ret = text.replace(exp, tok + '<!-- -->' + rep + tok);
+        return ret.split(tok);
+    };
 
     // Replace _Some text_ with <i>Some text</i>
     markleft.italic = {

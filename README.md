@@ -52,7 +52,7 @@ Add markleft.js or markleft.min.js to your page.
 Writing Plugins
 ---------------
 
-You can register your own plugins to markup. Here's the example of a plugin that puts all your text in lowercase.
+You can register your own plugins to markleft. Here's the example of a plugin that puts all your text in lowercase.
 
     markleft.registerPlugin({
         name: 'lowercase',
@@ -61,20 +61,22 @@ You can register your own plugins to markup. Here's the example of a plugin that
         }
     });
 
-Of course you should come up with better ideas for plugins that this.
+Of course you can and should come up with better ideas for plugins!
 
-Later on you can also unregister the plugin:
+Later on you can also unregister your plugin:
 
     markleft.unregisterPlugin('lowercase');
 
-Advanced plugins
-----------------
+Advanced usage
+--------------
 
-Some plugins require their output to be final, i.e. not transformed by subsequent plugins. In order to achieve this, the transform method can chose to return an array of strings.
+###Tokenize
 
-The plugin engine will not run on lines starting with a &gt;
+Some plugins require that their output be final, i.e. not transformed by subsequent plugins. In order to achieve this, the transform method can chose to return an array of strings.
 
-Example, the italic plugin:
+The plugin engine will not run on lines starting with a '&gt';
+
+See for example this italic plugin:
 
     markleft.registerPlugin({
         name: 'italic',
@@ -84,21 +86,34 @@ Example, the italic plugin:
         }
     });
 
-Will replace `'I am _blue_'` with `'I am <i class="italic">blue</i>'`. Imagine another plugin replace `"xxx"` with `<b>xxx</b>`, then we will loose `class="italic"` and end up with an invalid HTML.
+It will replace `'I am _blue_'` with `'I am <i class="italic">blue</i>'`.
 
-That's why such plugin should be writen this way:
+Now imagine that another plugin replace `"xxx"` with `<cite>xxx</cite>`, then we will loose `class="italic"` and end up with an invalid HTML.
+
+That's why this plugin should be writen this way:
     markleft.registerPlugin({
         name: 'italic',
         transform: function (text) {
             var exp = /_([^_]+)_/g;
-            var tok = '#%@%#';
-            var rep = tok + '<i class="italic">$1</i>' + tok;
-            var ret = text.replace(exp, rep);
-            return ret.split(tok);
+            return markleft.finalReplace(text, exp, rep);
         }
     });
 
 Everything from `<i>` to `</i>` will be ignored by the plugin manager, thus will remain identical when output.
+
+###transformHTML
+
+Of course, there is a way to force a plugin to transform HTML as well (in case you know what you're doing). To do so, it has to define and implement the 'transformHTML' method.
+
+Example:
+
+    markleft.registerPlugin({
+        name: 'addLinkClass',
+        transformHTML: function (html) {
+            var exp = /<a /g;
+            return html.replace(exp, "<a class='myclass' ");
+        }
+    });
 
 Included plugins
 ----------------

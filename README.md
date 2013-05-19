@@ -7,12 +7,33 @@ Overview
 --------
 
 The main goal of markleft is to be just as natural as writing normal text:
- - links are replaces with HTML a tags
- - line breaks preserved
- - HTML is escaped
- - bullet points detected and replaced with HTML ul/li tags [TODO]
+  * links are replaces with HTML a tags
+  * line breaks preserved
+  * HTML is escaped
+  * bullet points detected and replaced with HTML ul/li tags [TODO]
 
 Markleft combine this with a secondary objective, which is to be extensible offering you the chance to add your own extension to the language.
+
+Synthax
+-------
+
+    This is a markleft text with a link: http://www.fovea.cc/
+
+    It also features cool \n's and a bunch things:
+    - this
+    - that
+    - and also that.
+
+Markleft will convert this to:
+
+    This is a markleft text with a link: <a href="http://www.fovea.cc/">http://www.fovea.cc/</a><br />
+    <br />
+    <br />It also features cool \n's and a bunch things:
+    <ul>
+    <li>this</li>
+    <li>that</li>
+    <li>and also that.</li>
+    </ul>
 
 Usage
 -----
@@ -58,19 +79,18 @@ Example, the italic plugin:
     markleft.registerPlugin({
         name: 'italic',
         transform: function (text) {
-            var exp = /_([A-Za-z ]+)_/g;
+            var exp = /_([^_]+)_/g;
             return text.replace(exp, '<i class="italic">$1</i>');
         }
     });
 
 Will replace `'I am _blue_'` with `'I am <i class="italic">blue</i>'`. Imagine another plugin replace `"xxx"` with `<b>xxx</b>`, then we will loose `class="italic"` and end up with an invalid HTML.
 
-That's such plugin should be writen this way:
-
+That's why such plugin should be writen this way:
     markleft.registerPlugin({
         name: 'italic',
         transform: function (text) {
-            var exp = /_([A-Za-z ]+)_/g;
+            var exp = /_([^_]+)_/g;
             var tok = '#%@%#';
             var rep = tok + '<i class="italic">$1</i>' + tok;
             var ret = text.replace(exp, rep);

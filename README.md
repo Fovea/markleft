@@ -96,7 +96,7 @@ That's why this plugin should be writen this way:
         name: 'italic',
         transform: function (text) {
             var exp = /_([^_]+)_/g;
-            return markleft.finalReplace(text, exp, rep);
+            return markleft.finalReplace(text, exp, '<i class="italic">$1</i>');
         }
     });
 
@@ -122,7 +122,6 @@ Included plugins
 markleft comes with a range of included plugins that you may choose to activate:
 
 ###markleft.bold
-
 Replace `Hello *world*` with `Hello <b>world</b>`.
 
 Enable with `markdown.registerPlugin(markdown.bold);`

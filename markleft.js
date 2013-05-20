@@ -34,7 +34,7 @@
     // --------------
 
     // Library version
-    markleft.VERSION = '0.2.0';
+    markleft.VERSION = '0.3.0';
 
     var runPlugin = function (plug, htmlList) {
         var newList = [];
